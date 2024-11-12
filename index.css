@@ -1,5 +1,9 @@
 /* 样式文件 styles.css */
 
+body {
+  overflow-x: hidden;
+}
+
 #results {
   display: flex;
   justify-content: center;
@@ -39,4 +43,51 @@
 /* 最便宜的价格 */
 .cheapest-price {
   background-color: #e9fdf6;
+}
+
+/* 被标记的价格 */
+.marked-price {
+  background-color: #f9e79f;
+}
+
+.marked-price-new {
+  background-color: #e1ffe0;
+  color: #c0392b;
+}
+
+/* 开关按钮样式 */
+#toggleButton {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+#toggleButton:hover {
+  background-color: #0056b3;
+}
+
+/* 开关状态的不同样式 */
+#toggleButton.active {
+  background-color: #28a745;
+}
+
+#toggleButton.active:hover {
+  background-color: #218838;
+}
+
+/* 切换按钮的文本样式 */
+#toggleButton::after {
+  content: "标记特殊价格";
+}
+
+#toggleButton.active::after {
+  content: "取消标记特殊价格";
 }

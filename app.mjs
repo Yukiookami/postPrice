@@ -13,6 +13,27 @@ document.addEventListener("DOMContentLoaded", () => {
     );
     resultsContainer.appendChild(combinedTable);
   }
+
+  // 在右上角追加一个开关按钮
+  const toggleButton = document.createElement("button");
+  toggleButton.style.position = "fixed";
+  toggleButton.style.top = "10px";
+  toggleButton.id = "toggleButton";
+  toggleButton.style.right = "10px";
+  document.body.appendChild(toggleButton);
+
+  // 添加开关按钮的点击事件
+  let isMarked = false;
+  toggleButton.addEventListener("click", () => {
+    if (isMarked) {
+      unmarkSpecialPrices();
+      toggleButton.classList.remove("active");
+    } else {
+      markSpecialPrices();
+      toggleButton.classList.add("active");
+    }
+    isMarked = !isMarked;
+  });
 });
 
 // 创建合并价格表的函数
@@ -33,6 +54,7 @@ function createCombinedPriceTable(services, title) {
   // 创建表格元素
   const table = document.createElement("table");
   table.classList.add("price-table"); // 添加 CSS 类
+  table.id = "combined-price-table"; // 为表格添加一个 ID，方便后续操作
 
   // 创建表头
   const thead = document.createElement("thead");
@@ -121,4 +143,89 @@ function createCombinedPriceTable(services, title) {
   container.appendChild(table);
 
   return container;
+}
+
+// 标记特殊价格的函数
+function markSpecialPrices() {
+  const table = document.getElementById("combined-price-table");
+  if (!table) return;
+
+  const rows = table.getElementsByTagName("tr");
+
+  // 遍历所有行，跳过表头
+  for (let i = 1; i < rows.length; i++) {
+    const cells = rows[i].getElementsByTagName("td");
+
+    // 遍历当前行的每个服务价格单元格
+    for (let k = 1; k < cells.length; k++) {
+      const currentPrice = parseFloat(cells[k].textContent);
+
+      // 比较当前价格与前一个重量的价格，仅在当前价格更低的情况下进行标记
+      if (i > 1) {
+        const previousRowCells = rows[i - 1].getElementsByTagName("td");
+        const previousPrice = parseFloat(previousRowCells[k].textContent);
+
+        if (
+          !isNaN(currentPrice) &&
+          !isNaN(previousPrice) &&
+          currentPrice < previousPrice
+        ) {
+          if (!cells[k].textContent.includes("🍟")) {
+            cells[k].textContent += " 🍟";
+          }
+          cells[k].classList.add("marked-price-new");
+        }
+      }
+
+      // 比较与自己一半重量的2倍价格比，是否划算
+      const halfWeight = parseFloat(
+        (parseFloat(cells[0].textContent) / 2).toFixed(1)
+      );
+      let halfWeightRow = null;
+
+      for (let j = 1; j < rows.length; j++) {
+        const currentWeight = parseFloat(
+          rows[j].getElementsByTagName("td")[0].textContent
+        );
+        if (currentWeight === halfWeight) {
+          halfWeightRow = rows[j];
+          break;
+        }
+      }
+
+      if (halfWeightRow) {
+        const halfPrice = parseFloat(
+          halfWeightRow.getElementsByTagName("td")[k].textContent
+        );
+        if (
+          !isNaN(currentPrice) &&
+          !isNaN(halfPrice) &&
+          currentPrice > halfPrice * 2
+        ) {
+          if (!cells[k].textContent.includes("⭐")) {
+            cells[k].textContent += " ⭐";
+          }
+          cells[k].classList.add("marked-price");
+        }
+      }
+    }
+  }
+}
+
+// 取消标记特殊价格的函数
+function unmarkSpecialPrices() {
+  const table = document.getElementById("combined-price-table");
+  if (!table) return;
+
+  const markedCells = [
+    ...table.getElementsByClassName("marked-price-new"),
+    ...table.getElementsByClassName("marked-price"),
+  ];
+
+  while (markedCells.length > 0) {
+    const cell = markedCells[0];
+    cell.textContent = cell.textContent.replace(" ⭐", "").replace(" 🍟", "");
+    cell.classList.remove("marked-price-new");
+    cell.classList.remove("marked-price");
+  }
 }
